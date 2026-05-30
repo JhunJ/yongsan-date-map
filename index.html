@@ -14,10 +14,10 @@
 :root{
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
-  --bg:#f5f3ef;
+  --bg:#f8f9fb;
   --card:#fff;
-  --text:#222;
-  --muted:#666;
+  --text:#1a1a1a;
+  --muted:#6b7280;
 }
 body{
   margin:0;
@@ -79,12 +79,83 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:-.4px}
   cursor:pointer;
 }
 .tab.active{background:#222;color:#fff}
+.map-shell{
+  position:relative;
+  margin:10px 12px 0;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 8px 28px rgba(15,23,42,.10), 0 2px 6px rgba(15,23,42,.06);
+  border:1px solid rgba(0,0,0,.06);
+}
 #map{
-  height:42vh;min-height:220px;
+  height:44vh;min-height:240px;
   width:100%;
   z-index:1;
-  border-bottom:1px solid #ddd;
+  background:#e8edf2;
 }
+.map-styles{
+  position:absolute;bottom:10px;left:10px;z-index:1000;
+  display:flex;gap:5px;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(10px);
+  padding:4px;border-radius:999px;
+  box-shadow:0 2px 10px rgba(0,0,0,.12);
+}
+.map-style{
+  border:0;border-radius:999px;padding:6px 10px;
+  font-size:11px;font-weight:700;color:#555;background:transparent;
+  cursor:pointer;
+}
+.map-style.active{background:#1a73e8;color:#fff}
+.leaflet-control-zoom{
+  border:none!important;
+  box-shadow:0 2px 10px rgba(0,0,0,.12)!important;
+  border-radius:12px!important;
+  overflow:hidden;
+}
+.leaflet-control-zoom a{
+  width:36px!important;height:36px!important;
+  line-height:36px!important;
+  font-size:18px!important;
+  color:#444!important;
+  border-bottom:1px solid #eee!important;
+}
+.leaflet-control-zoom a:last-child{border-bottom:none!important}
+.leaflet-control-attribution{
+  font-size:9px!important;
+  background:rgba(255,255,255,.78)!important;
+  backdrop-filter:blur(4px);
+  padding:2px 6px!important;
+  border-radius:6px 0 0 0;
+}
+.leaflet-popup-content-wrapper{
+  border-radius:14px!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.14)!important;
+  padding:0!important;
+}
+.leaflet-popup-tip{background:#fff!important}
+.leaflet-popup-content{margin:0!important}
+.popup-inner{padding:14px 14px 12px}
+.popup-cat{
+  display:inline-block;font-size:10px;font-weight:800;
+  border-radius:999px;padding:3px 7px;margin-bottom:6px;
+}
+.popup-area{font-size:12px;color:#6b7280;margin-top:2px}
+.popup-theme{font-size:13px;color:#374151;line-height:1.45;margin-top:8px}
+.popup-links{display:flex;gap:6px;margin-top:12px}
+.popup-links a{
+  flex:1;text-align:center;text-decoration:none;
+  font-size:12px;font-weight:700;border-radius:10px;padding:8px 10px;
+}
+.popup-g{background:#f3f4f6;color:#111}
+.popup-n{background:#03c75a;color:#fff}
+.map-pin{
+  width:28px;height:36px;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.28));
+  transition:transform .15s ease;
+}
+.map-pin svg{display:block;width:100%;height:100%}
+.leaflet-marker-icon.active-pin .map-pin{transform:scale(1.15) translateY(-2px)}
 .panel{display:none}
 .panel.active{display:block}
 .count{
@@ -163,9 +234,7 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:-.4px}
   border-radius:13px;
   line-height:1.45;
 }
-.leaflet-popup-content{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;font-size:13px;margin:10px 12px}
-.popup-title{font-weight:800;font-size:15px;margin-bottom:3px}
-.popup-links a{display:inline-block;margin-right:6px;margin-top:7px;text-decoration:none;font-weight:800;color:#2563eb}
+.popup-title{font-weight:800;font-size:16px;letter-spacing:-.3px;color:#111}
 .footer{
   text-align:center;font-size:11px;color:#999;
   padding:0 12px calc(16px + var(--safe-bottom));
@@ -195,8 +264,15 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:-.4px}
 </header>
 
 <div id="panel-places" class="panel active">
-  <div id="map"></div>
-  <div class="note">좌표는 빠른 탐색용 기준점이에요. 영업시간·주소는 G(구글) / N(네이버) 링크로 최종 확인하세요.</div>
+  <div class="map-shell">
+    <div id="map"></div>
+    <div class="map-styles" id="mapStyles">
+      <button class="map-style active" data-style="voyager">일반</button>
+      <button class="map-style" data-style="light">라이트</button>
+      <button class="map-style" data-style="dark">다크</button>
+    </div>
+  </div>
+  <div class="note">Carto 지도(무료) · 좌표는 탐색용 기준점 · G/N 링크로 최종 확인</div>
   <div class="count" id="count"></div>
   <main class="list" id="list"></main>
 </div>
@@ -273,17 +349,59 @@ let activeCat = "전체";
 let searchQuery = "";
 const markerMap = new Map();
 
-const map = L.map("map",{zoomControl:true}).setView([37.54,126.98],13);
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
-  maxZoom:19, attribution:"&copy; OpenStreetMap"
+const mapStyles = {
+  voyager:{
+    url:"https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
+  },
+  light:{
+    url:"https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
+  },
+  dark:{
+    url:"https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
+  }
+};
+
+const map = L.map("map",{zoomControl:false}).setView([37.54,126.98],13);
+L.control.zoom({position:"topright"}).addTo(map);
+
+let tileLayer = L.tileLayer(mapStyles.voyager.url,{
+  maxZoom:20, subdomains:"abcd", attribution:mapStyles.voyager.attribution, detectRetina:true
 }).addTo(map);
 
+document.getElementById("mapStyles").addEventListener("click", e => {
+  const btn = e.target.closest(".map-style");
+  if(!btn) return;
+  document.querySelectorAll(".map-style").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  const style = mapStyles[btn.dataset.style];
+  tileLayer.setUrl(style.url);
+  map.attributionControl.setPrefix(false);
+});
+
 function makeIcon(cat){
+  const c = colors[cat];
   return L.divIcon({
-    className:"",
-    html:`<div style="width:18px;height:18px;border-radius:50%;background:${colors[cat]};border:3px solid white;box-shadow:0 1px 6px rgba(0,0,0,.35)"></div>`,
-    iconSize:[18,18], iconAnchor:[9,9]
+    className:"custom-pin",
+    html:`<div class="map-pin"><svg viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg"><path d="M14 0C6.82 0 1 5.82 1 13c0 9.8 13 23 13 23s13-13.2 13-23C27 5.82 21.18 0 14 0z" fill="${c}"/><circle cx="14" cy="13" r="5.5" fill="#fff" opacity=".95"/></svg></div>`,
+    iconSize:[28,36], iconAnchor:[14,36], popupAnchor:[0,-32]
   });
+}
+
+function popupHtml(p){
+  const cls = classMap[p.cat];
+  return `<div class="popup-inner">
+    <span class="popup-cat badge ${cls}">${p.cat}</span>
+    <div class="popup-title">${p.name}${p.top10?" ⭐":""}</div>
+    <div class="popup-area">${p.area}</div>
+    <div class="popup-theme">${p.theme}</div>
+    <div class="popup-links">
+      <a class="popup-g" href="${p.google}" target="_blank" rel="noopener">Google Maps</a>
+      <a class="popup-n" href="${p.naver}" target="_blank" rel="noopener">Naver Map</a>
+    </div>
+  </div>`;
 }
 
 function matchPlace(p){
@@ -311,7 +429,7 @@ function focusPlace(name){
     map.setView([p.lat,p.lng],16);
     m.openPopup();
     setTimeout(() => map.invalidateSize(), 200);
-    window.scrollTo({top:0, behavior:"smooth"});
+    window.scrollTo({top:document.querySelector(".map-shell").offsetTop - 8, behavior:"smooth"});
   }
 }
 
@@ -326,14 +444,7 @@ function render(){
 
   filtered.forEach(p => {
     const marker = L.marker([p.lat,p.lng],{icon:makeIcon(p.cat)})
-      .bindPopup(`
-        <div class="popup-title">${p.name}${p.top10?" ⭐":""}</div>
-        <div>${p.area}</div>
-        <div style="margin-top:4px;color:#555">${p.theme}</div>
-        <div class="popup-links">
-          <a href="${p.google}" target="_blank" rel="noopener">Google</a>
-          <a href="${p.naver}" target="_blank" rel="noopener">Naver</a>
-        </div>`)
+      .bindPopup(popupHtml(p),{maxWidth:280,minWidth:220,className:"place-popup"})
       .addTo(map);
     markerMap.set(p.name, marker);
     bounds.push([p.lat,p.lng]);
@@ -360,12 +471,12 @@ function render(){
       if(e.target.tagName.toLowerCase() === "a") return;
       map.setView([p.lat,p.lng],16);
       marker.openPopup();
-      window.scrollTo({top:0, behavior:"smooth"});
+      window.scrollTo({top:document.querySelector(".map-shell").offsetTop - 8, behavior:"smooth"});
     });
     list.appendChild(card);
   });
 
-  document.getElementById("count").textContent = `${filtered.length}개 장소 표시 중`;
+  document.getElementById("count").textContent = `${filtered.length}개 장소 · Carto 지도`;
   if(bounds.length) map.fitBounds(bounds,{padding:[28,28],maxZoom:14});
   setTimeout(() => map.invalidateSize(), 200);
 }
