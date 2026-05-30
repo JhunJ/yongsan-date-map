@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f5f3ef">
+<meta name="theme-color" content="#f4f1ec">
 <title>용산 감도 공간 지도</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -14,289 +15,352 @@
 :root{
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bottom:env(safe-area-inset-bottom,0px);
-  --bg:#f8f9fb;
-  --card:#fff;
-  --text:#1a1a1a;
-  --muted:#6b7280;
+  --bg:#f4f1ec;
+  --bg-soft:#ece8e1;
+  --surface:#fdfcfa;
+  --surface-2:#ffffff;
+  --line:rgba(28,25,23,.08);
+  --line-strong:rgba(28,25,23,.14);
+  --text:#1c1917;
+  --text-2:#44403c;
+  --muted:#78716c;
+  --muted-2:#a8a29e;
+  --accent:#292524;
+  --shadow:0 1px 2px rgba(28,25,23,.04), 0 8px 24px rgba(28,25,23,.06);
+  --shadow-lg:0 12px 40px rgba(28,25,23,.10);
+  --radius:18px;
+  --radius-sm:12px;
+  --cafe:#5c7a8a;
+  --food:#9b6b6b;
+  --culture:#7a6b8a;
+  --walk:#6b8f71;
+  --dessert:#b8886b;
+  --gold:#a67c3a;
 }
 body{
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
   background:var(--bg);
   color:var(--text);
   padding-bottom:var(--safe-bottom);
+  -webkit-font-smoothing:antialiased;
 }
 .header{
   position:sticky;top:0;z-index:5000;
-  background:rgba(255,255,255,.96);
-  backdrop-filter:blur(16px);
-  border-bottom:1px solid #e8e2d8;
-  padding:calc(10px + var(--safe-top)) 12px 10px;
+  background:rgba(244,241,236,.88);
+  backdrop-filter:saturate(1.2) blur(18px);
+  border-bottom:1px solid var(--line);
+  padding:calc(14px + var(--safe-top)) 16px 14px;
 }
-h1{font-size:20px;margin:0 0 4px;letter-spacing:-.4px}
-.sub{font-size:12px;color:var(--muted);line-height:1.35}
-.search-wrap{padding-top:10px}
+.header-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:2px}
+.eyebrow{
+  font-size:10px;font-weight:600;letter-spacing:.14em;
+  color:var(--muted);text-transform:uppercase;
+}
+h1{font-size:22px;margin:0;letter-spacing:-.03em;font-weight:700;line-height:1.2}
+.sub{font-size:12px;color:var(--muted);line-height:1.45;margin-top:6px}
+.search-wrap{padding-top:14px}
 .search{
-  width:100%;
-  border:1px solid #e0d8cc;
-  border-radius:12px;
-  padding:10px 12px;
-  font-size:15px;
-  background:#fff;
-  outline:none;
+  width:100%;border:1px solid var(--line-strong);
+  border-radius:var(--radius-sm);
+  padding:12px 14px;font-size:15px;
+  background:var(--surface);
+  outline:none;color:var(--text);
+  transition:border-color .2s, box-shadow .2s;
 }
-.search:focus{border-color:#999;box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+.search::placeholder{color:var(--muted-2)}
+.search:focus{
+  border-color:rgba(28,25,23,.22);
+  box-shadow:0 0 0 4px rgba(28,25,23,.05);
+}
 .filters{
-  display:flex;gap:7px;overflow-x:auto;
-  padding-top:10px;
+  display:flex;gap:8px;overflow-x:auto;
+  padding-top:12px;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
 }
 .filters::-webkit-scrollbar{display:none}
 .filter{
   flex:0 0 auto;
-  border:0;border-radius:999px;
-  padding:8px 11px;
-  font-size:13px;font-weight:700;
-  background:#eee;color:#333;
+  border:1px solid var(--line-strong);
+  border-radius:999px;
+  padding:8px 13px;
+  font-size:12px;font-weight:600;
+  background:var(--surface);
+  color:var(--text-2);
   cursor:pointer;
+  transition:all .18s ease;
   -webkit-tap-highlight-color:transparent;
 }
-.filter.active{outline:2px solid #222;outline-offset:1px}
-.filter[data-cat="전체"]{background:#f3f4f6;color:#374151}
-.filter[data-cat="TOP10"]{background:#fef3c7;color:#b45309}
-.filter[data-cat="카페"]{background:#dbeafe;color:#1d4ed8}
-.filter[data-cat="음식"]{background:#fee2e2;color:#b91c1c}
-.filter[data-cat="문화"]{background:#ede9fe;color:#6d28d9}
-.filter[data-cat="산책"]{background:#dcfce7;color:#15803d}
-.filter[data-cat="디저트"]{background:#ffedd5;color:#c2410c}
+.filter.active{
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#fafaf9;
+  box-shadow:0 4px 14px rgba(28,25,23,.14);
+}
+.filter[data-cat="카페"].active{background:var(--cafe);border-color:var(--cafe)}
+.filter[data-cat="음식"].active{background:var(--food);border-color:var(--food)}
+.filter[data-cat="문화"].active{background:var(--culture);border-color:var(--culture)}
+.filter[data-cat="산책"].active{background:var(--walk);border-color:var(--walk)}
+.filter[data-cat="디저트"].active{background:var(--dessert);border-color:var(--dessert)}
+.filter[data-cat="TOP10"].active{background:var(--gold);border-color:var(--gold)}
 .tabs{
-  display:flex;gap:6px;padding-top:10px;
+  display:flex;gap:0;padding-top:14px;
+  background:var(--bg-soft);
+  border-radius:var(--radius-sm);
+  padding:4px;
+  margin-top:14px;
 }
 .tab{
-  flex:1;border:0;border-radius:10px;padding:9px;
-  font-size:13px;font-weight:700;background:#eee;color:#555;
-  cursor:pointer;
+  flex:1;border:0;border-radius:10px;padding:10px 8px;
+  font-size:13px;font-weight:600;
+  background:transparent;color:var(--muted);
+  cursor:pointer;transition:all .18s ease;
 }
-.tab.active{background:#222;color:#fff}
+.tab.active{
+  background:var(--surface-2);
+  color:var(--text);
+  box-shadow:0 1px 3px rgba(28,25,23,.08);
+}
 .map-shell{
   position:relative;
-  margin:10px 12px 0;
-  border-radius:18px;
+  margin:16px 16px 0;
+  border-radius:22px;
   overflow:hidden;
-  box-shadow:0 8px 28px rgba(15,23,42,.10), 0 2px 6px rgba(15,23,42,.06);
-  border:1px solid rgba(0,0,0,.06);
+  box-shadow:var(--shadow-lg);
+  border:1px solid var(--line);
 }
 #map{
-  height:44vh;min-height:240px;
-  width:100%;
-  z-index:1;
-  background:#e8edf2;
+  height:44vh;min-height:250px;
+  width:100%;z-index:1;
+  background:#e8e4de;
 }
 .map-styles{
-  position:absolute;bottom:10px;left:10px;z-index:1000;
-  display:flex;gap:5px;
-  background:rgba(255,255,255,.94);
-  backdrop-filter:blur(10px);
-  padding:4px;border-radius:999px;
-  box-shadow:0 2px 10px rgba(0,0,0,.12);
+  position:absolute;bottom:12px;left:12px;z-index:1000;
+  display:flex;gap:2px;
+  background:rgba(253,252,250,.92);
+  backdrop-filter:blur(12px);
+  padding:3px;border-radius:999px;
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
 }
 .map-style{
-  border:0;border-radius:999px;padding:6px 10px;
-  font-size:11px;font-weight:700;color:#555;background:transparent;
-  cursor:pointer;
+  border:0;border-radius:999px;padding:7px 11px;
+  font-size:11px;font-weight:600;color:var(--muted);
+  background:transparent;cursor:pointer;
+  transition:all .15s ease;
 }
-.map-style.active{background:#1a73e8;color:#fff}
+.map-style.active{background:var(--accent);color:#fafaf9}
 .leaflet-control-zoom{
   border:none!important;
-  box-shadow:0 2px 10px rgba(0,0,0,.12)!important;
-  border-radius:12px!important;
-  overflow:hidden;
+  box-shadow:var(--shadow)!important;
+  border-radius:14px!important;
+  overflow:hidden;border:1px solid var(--line)!important;
 }
 .leaflet-control-zoom a{
-  width:36px!important;height:36px!important;
-  line-height:36px!important;
-  font-size:18px!important;
-  color:#444!important;
-  border-bottom:1px solid #eee!important;
+  width:34px!important;height:34px!important;
+  line-height:34px!important;font-size:16px!important;
+  color:var(--text-2)!important;
+  background:var(--surface)!important;
+  border-bottom:1px solid var(--line)!important;
 }
 .leaflet-control-zoom a:last-child{border-bottom:none!important}
 .leaflet-control-attribution{
   font-size:9px!important;
-  background:rgba(255,255,255,.78)!important;
+  background:rgba(253,252,250,.82)!important;
   backdrop-filter:blur(4px);
-  padding:2px 6px!important;
-  border-radius:6px 0 0 0;
+  padding:2px 6px!important;color:var(--muted)!important;
 }
 .leaflet-popup-content-wrapper{
-  border-radius:14px!important;
-  box-shadow:0 8px 24px rgba(0,0,0,.14)!important;
-  padding:0!important;
+  border-radius:16px!important;
+  box-shadow:var(--shadow-lg)!important;
+  padding:0!important;border:1px solid var(--line)!important;
 }
-.leaflet-popup-tip{background:#fff!important}
+.leaflet-popup-tip{background:var(--surface)!important}
 .leaflet-popup-content{margin:0!important}
-.popup-inner{padding:14px 14px 12px}
+.popup-inner{padding:16px}
 .popup-cat{
-  display:inline-block;font-size:10px;font-weight:800;
-  border-radius:999px;padding:3px 7px;margin-bottom:6px;
+  display:inline-block;font-size:10px;font-weight:600;
+  letter-spacing:.02em;border-radius:999px;
+  padding:4px 8px;margin-bottom:8px;
 }
-.popup-area{font-size:12px;color:#6b7280;margin-top:2px}
-.popup-theme{font-size:13px;color:#374151;line-height:1.45;margin-top:8px}
-.popup-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.map-icons{display:flex;gap:4px;flex:0 0 auto}
+.popup-area{font-size:12px;color:var(--muted);margin-top:4px}
+.popup-theme{font-size:13px;color:var(--text-2);line-height:1.55;margin-top:10px}
+.popup-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.popup-title{font-weight:700;font-size:17px;letter-spacing:-.03em;color:var(--text);line-height:1.25}
+.map-icons{display:flex;gap:5px;flex:0 0 auto}
 .mi{
   display:inline-flex;align-items:center;justify-content:center;
-  width:26px;height:26px;border-radius:8px;
-  text-decoration:none;font-size:11px;font-weight:800;color:#fff;
+  width:28px;height:28px;border-radius:9px;
+  text-decoration:none;font-size:10px;font-weight:700;color:#fff;
+  transition:transform .15s ease, opacity .15s ease;
 }
-.mi.g{background:#1a1a1a}
-.mi.n{background:#03c75a}
-.mi.k{background:#fee500;color:#3c1e1e}
-.ratings{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.mi:active{transform:scale(.94)}
+.mi.g{background:#2d2a28}
+.mi.n{background:#2db400}
+.mi.k{background:#f5d020;color:#3a2f00}
+.ratings{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .rt{
-  display:inline-flex;align-items:center;gap:3px;
-  font-size:11px;background:#f3f4f6;border-radius:8px;padding:4px 7px;color:#444;
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;background:var(--bg-soft);
+  border:1px solid var(--line);
+  border-radius:999px;padding:5px 9px;color:var(--text-2);
 }
-.rt i{font-style:normal;font-weight:800;min-width:12px;text-align:center}
-.rt.g i{color:#1a1a1a}
-.rt.n i{color:#03c75a}
-.rt.k i{color:#b8860b}
-.rt b{font-weight:800;color:#111}
-.rt small{color:#888;font-weight:600;margin-left:1px}
-.card .map-icons{margin-top:2px}
-.card .ratings{margin-top:6px}
-.map-pin{
-  width:28px;height:36px;
-  filter:drop-shadow(0 2px 4px rgba(0,0,0,.28));
-  transition:transform .15s ease;
-}
+.rt i{font-style:normal;font-weight:700;min-width:12px;text-align:center;font-size:10px}
+.rt.g i{color:var(--text)}
+.rt.n i{color:#2db400}
+.rt.k i{color:var(--gold)}
+.rt b{font-weight:700;color:var(--text)}
+.rt small{color:var(--muted);font-weight:500;margin-left:1px}
+.map-pin{width:26px;height:34px;filter:drop-shadow(0 2px 6px rgba(28,25,23,.22));transition:transform .15s ease}
 .map-pin svg{display:block;width:100%;height:100%}
-.pin-wrap{
-  display:flex;flex-direction:column;align-items:center;
-  transform:translateY(0);
-}
+.pin-wrap{display:flex;flex-direction:column;align-items:center}
 .pin-label{
-  text-align:center;margin-bottom:3px;
-  background:rgba(255,255,255,.96);
-  border:1px solid rgba(0,0,0,.08);
-  border-radius:8px;padding:3px 6px 4px;
-  box-shadow:0 2px 8px rgba(0,0,0,.12);
-  max-width:88px;
-  line-height:1.2;
+  text-align:center;margin-bottom:4px;
+  background:rgba(253,252,250,.94);
+  backdrop-filter:blur(8px);
+  border:1px solid var(--line);
+  border-radius:10px;padding:4px 8px 5px;
+  box-shadow:0 4px 14px rgba(28,25,23,.10);
+  max-width:92px;line-height:1.25;
 }
 .pin-name{
-  font-size:10px;font-weight:800;color:#111;
+  font-size:10px;font-weight:700;color:var(--text);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  max-width:76px;letter-spacing:-.2px;
+  max-width:80px;letter-spacing:-.02em;
 }
 .pin-cat{
-  font-size:9px;font-weight:700;margin-top:2px;
-  border-radius:999px;padding:1px 5px;display:inline-block;
+  font-size:9px;font-weight:600;margin-top:3px;
+  border-radius:999px;padding:2px 6px;display:inline-block;
+  letter-spacing:-.01em;
 }
-.pin-cat.cafe{background:#dbeafe;color:#1d4ed8}
-.pin-cat.food{background:#fee2e2;color:#b91c1c}
-.pin-cat.culture{background:#ede9fe;color:#6d28d9}
-.pin-cat.walk{background:#dcfce7;color:#15803d}
-.pin-cat.dessert{background:#ffedd5;color:#c2410c}
+.pin-cat.cafe{background:rgba(92,122,138,.12);color:var(--cafe)}
+.pin-cat.food{background:rgba(155,107,107,.12);color:var(--food)}
+.pin-cat.culture{background:rgba(122,107,138,.12);color:var(--culture)}
+.pin-cat.walk{background:rgba(107,143,113,.12);color:var(--walk)}
+.pin-cat.dessert{background:rgba(184,136,107,.12);color:var(--dessert)}
 .custom-pin{background:transparent!important;border:none!important}
-.leaflet-marker-icon.active-pin .map-pin{transform:scale(1.12) translateY(-2px)}
 .panel{display:none}
 .panel.active{display:block}
 .count{
-  padding:9px 14px 0;
-  font-size:13px;
-  color:var(--muted);
+  padding:14px 18px 0;
+  font-size:12px;font-weight:500;
+  color:var(--muted);letter-spacing:-.01em;
 }
-.list{padding:10px 12px 20px}
-.routes{padding:0 12px 24px}
+.list{padding:10px 16px 24px}
+.routes{padding:8px 16px 28px}
 .route-card{
-  background:#fff;border-radius:16px;padding:14px 12px;
-  margin-bottom:10px;border:1px solid #eee;
-  box-shadow:0 2px 9px rgba(0,0,0,.04);
+  background:var(--surface);
+  border-radius:var(--radius);
+  padding:18px 16px;
+  margin-bottom:12px;
+  border:1px solid var(--line);
+  box-shadow:var(--shadow);
 }
-.route-title{font-size:15px;font-weight:800;margin-bottom:4px}
-.route-desc{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:10px}
+.route-num{
+  font-size:10px;font-weight:600;letter-spacing:.12em;
+  color:var(--muted);text-transform:uppercase;margin-bottom:6px;
+}
+.route-title{font-size:16px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px}
+.route-desc{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:14px}
 .route-steps{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .route-step{
-  border:0;border-radius:999px;padding:7px 10px;
-  font-size:12px;font-weight:700;background:#f3f4f6;color:#333;
-  cursor:pointer;
+  border:1px solid var(--line-strong);
+  border-radius:999px;padding:8px 12px;
+  font-size:12px;font-weight:600;
+  background:var(--surface);
+  color:var(--text-2);
+  cursor:pointer;transition:all .15s ease;
 }
-.route-arrow{color:#aaa;font-size:12px}
+.route-step:active{background:var(--bg-soft)}
+.route-arrow{color:var(--muted-2);font-size:11px}
 .card{
-  background:var(--card);
-  border-radius:16px;
-  padding:13px 12px;
-  margin-bottom:10px;
-  box-shadow:0 2px 9px rgba(0,0,0,.055);
-  border:1px solid #eee;
-  border-left-width:5px;
+  background:var(--surface);
+  border-radius:var(--radius);
+  padding:16px;
+  margin-bottom:12px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--line);
   cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease;
   -webkit-tap-highlight-color:transparent;
+  position:relative;overflow:hidden;
 }
-.card.highlight{border-color:#fcd34d;background:#fffbeb}
-.card.cafe{border-left-color:#60a5fa}
-.card.food{border-left-color:#f87171}
-.card.culture{border-left-color:#a78bfa}
-.card.walk{border-left-color:#4ade80}
-.card.dessert{border-left-color:#fb923c}
-.row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
-.name{font-size:17px;font-weight:800;letter-spacing:-.3px}
-.top-star{color:#f59e0b;font-size:14px;margin-left:4px}
-.area{font-size:12px;color:#777;margin-top:3px}
-.theme{font-size:13px;color:#444;line-height:1.45;margin-top:8px}
-.keywords{font-size:11px;color:#888;margin-top:6px;line-height:1.4}
-.links{display:flex;gap:4px;flex:0 0 auto}
-.links a,.links .mi{
-  text-decoration:none;
-  font-size:11px;font-weight:800;
-  border-radius:8px;
-  width:26px;height:26px;
-  display:inline-flex;align-items:center;justify-content:center;
+.card::before{
+  content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:var(--cat-color, var(--accent));
+  opacity:.85;
 }
-.g,.mi.g{background:#222;color:white}
-.n,.mi.n{background:#03c75a;color:white}
-.k,.mi.k{background:#fee500;color:#3c1e1e}
-.badge{
-  display:inline-block;
-  font-size:11px;font-weight:800;
-  border-radius:999px;
-  padding:4px 7px;
-  margin-top:8px;
-  margin-right:4px;
+.card:active{transform:scale(.985)}
+.card.highlight{
+  background:linear-gradient(135deg, #fdfcfa 0%, #faf6ee 100%);
+  border-color:rgba(166,124,58,.18);
 }
-.badge.cafe{background:#dbeafe;color:#1d4ed8}
-.badge.food{background:#fee2e2;color:#b91c1c}
-.badge.culture{background:#ede9fe;color:#6d28d9}
-.badge.walk{background:#dcfce7;color:#15803d}
-.badge.dessert{background:#ffedd5;color:#c2410c}
-.badge.top{background:#fef3c7;color:#b45309}
-.popup-title{font-weight:800;font-size:16px;letter-spacing:-.3px;color:#111}
+.card.highlight::before{background:var(--gold)}
+.card.cafe{--cat-color:var(--cafe)}
+.card.food{--cat-color:var(--food)}
+.card.culture{--cat-color:var(--culture)}
+.card.walk{--cat-color:var(--walk)}
+.card.dessert{--cat-color:var(--dessert)}
+.card-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.card-meta{display:flex;align-items:center;gap:8px;min-width:0}
+.cat-label{
+  font-size:11px;font-weight:600;color:var(--cat-color);
+  letter-spacing:-.01em;
+}
+.area-tag{
+  font-size:11px;color:var(--muted);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.area-tag::before{content:"· ";opacity:.5}
+.name{font-size:18px;font-weight:700;letter-spacing:-.03em;line-height:1.25;margin-bottom:4px}
+.top-star{font-size:13px;margin-left:4px;opacity:.85}
+.theme{font-size:13px;color:var(--text-2);line-height:1.55;margin-top:10px}
+.keywords{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.45}
+.card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tag{
+  display:inline-block;font-size:10px;font-weight:600;
+  border-radius:999px;padding:4px 8px;
+  letter-spacing:-.01em;
+}
+.tag.top{background:rgba(166,124,58,.10);color:var(--gold)}
+.tag.pick{background:var(--bg-soft);color:var(--muted);border:1px solid var(--line)}
+.badge.cafe{background:rgba(92,122,138,.10);color:var(--cafe)}
+.badge.food{background:rgba(155,107,107,.10);color:var(--food)}
+.badge.culture{background:rgba(122,107,138,.10);color:var(--culture)}
+.badge.walk{background:rgba(107,143,113,.10);color:var(--walk)}
+.badge.dessert{background:rgba(184,136,107,.10);color:var(--dessert)}
 .footer{
-  text-align:center;font-size:11px;color:#999;
-  padding:0 12px calc(16px + var(--safe-bottom));
+  text-align:center;font-size:11px;color:var(--muted-2);
+  letter-spacing:.04em;
+  padding:8px 16px calc(20px + var(--safe-bottom));
 }
 </style>
 </head>
 <body>
 <header class="header">
-  <h1>용산 감도 공간 지도</h1>
-  <div class="sub">필터·검색으로 지도와 리스트를 함께 탐색 · 카드 탭하면 지도로 이동</div>
+  <div class="header-top">
+    <div>
+      <div class="eyebrow">Yongsan · Curated</div>
+      <h1>용산 감도 공간</h1>
+    </div>
+  </div>
+  <div class="sub">지도와 리스트가 연동됩니다. 카드를 누르면 해당 위치로 이동해요.</div>
   <div class="search-wrap">
-    <input class="search" id="search" type="search" placeholder="이름·지역·키워드 검색" autocomplete="off">
+    <input class="search" id="search" type="search" placeholder="이름, 지역, 키워드로 검색" autocomplete="off">
   </div>
   <div class="filters" id="filters">
     <button class="filter active" data-cat="전체">전체</button>
-    <button class="filter" data-cat="TOP10">⭐ TOP10</button>
-    <button class="filter" data-cat="카페">☕ 카페</button>
-    <button class="filter" data-cat="음식">🍽 음식</button>
-    <button class="filter" data-cat="문화">📚 문화</button>
-    <button class="filter" data-cat="산책">🌿 산책</button>
-    <button class="filter" data-cat="디저트">🍧 디저트</button>
+    <button class="filter" data-cat="TOP10">TOP 10</button>
+    <button class="filter" data-cat="카페">카페</button>
+    <button class="filter" data-cat="음식">음식</button>
+    <button class="filter" data-cat="문화">문화</button>
+    <button class="filter" data-cat="산책">산책</button>
+    <button class="filter" data-cat="디저트">디저트</button>
   </div>
   <div class="tabs">
-    <button class="tab active" data-panel="places">📍 장소</button>
-    <button class="tab" data-panel="routes">🗺 추천 루트</button>
+    <button class="tab active" data-panel="places">장소</button>
+    <button class="tab" data-panel="routes">루트</button>
   </div>
 </header>
 
@@ -304,8 +368,8 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:-.4px}
   <div class="map-shell">
     <div id="map"></div>
     <div class="map-styles" id="mapStyles">
-      <button class="map-style active" data-style="voyager">일반</button>
-      <button class="map-style" data-style="light">라이트</button>
+      <button class="map-style active" data-style="light">라이트</button>
+      <button class="map-style" data-style="voyager">일반</button>
       <button class="map-style" data-style="dark">다크</button>
     </div>
   </div>
@@ -317,7 +381,7 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:-.4px}
   <div class="routes" id="routes"></div>
 </div>
 
-<div class="footer">용산 · 서울숲 · 한남 · 효창공원 감도 데이트 리스트</div>
+<div class="footer">용산 · 서울숲 · 한남 · 효창공원</div>
 
 <script>
 const places = [
@@ -412,7 +476,7 @@ function ratingsHtml(p){
   return parts.length ? `<div class="ratings">${parts.join("")}</div>` : "";
 }
 
-const colors = {카페:"#2563eb",음식:"#dc2626",문화:"#7c3aed",산책:"#16a34a",디저트:"#ea580c"};
+const colors = {카페:"#5c7a8a",음식:"#9b6b6b",문화:"#7a6b8a",산책:"#6b8f71",디저트:"#b8886b"};
 const classMap = {카페:"cafe",음식:"food",문화:"culture",산책:"walk",디저트:"dessert"};
 
 let activeCat = "전체";
@@ -437,8 +501,8 @@ const mapStyles = {
 const map = L.map("map",{zoomControl:false}).setView([37.54,126.98],13);
 L.control.zoom({position:"topright"}).addTo(map);
 
-let tileLayer = L.tileLayer(mapStyles.voyager.url,{
-  maxZoom:20, subdomains:"abcd", attribution:mapStyles.voyager.attribution, detectRetina:true
+let tileLayer = L.tileLayer(mapStyles.light.url,{
+  maxZoom:20, subdomains:"abcd", attribution:mapStyles.light.attribution, detectRetina:true
 }).addTo(map);
 
 document.getElementById("mapStyles").addEventListener("click", e => {
@@ -451,7 +515,7 @@ document.getElementById("mapStyles").addEventListener("click", e => {
   map.attributionControl.setPrefix(false);
 });
 
-const catEmoji = {카페:"☕",음식:"🍽",문화:"📚",산책:"🌿",디저트:"🍧"};
+const catEmoji = {};
 
 function escHtml(s){
   return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
@@ -460,7 +524,6 @@ function escHtml(s){
 function makeIcon(p){
   const c = colors[p.cat];
   const cls = classMap[p.cat];
-  const emoji = catEmoji[p.cat] || "";
   const labelH = 34;
   const pinH = 36;
   const w = 88;
@@ -469,7 +532,7 @@ function makeIcon(p){
     html:`<div class="pin-wrap">
       <div class="pin-label">
         <div class="pin-name" title="${escHtml(p.name)}">${escHtml(p.name)}</div>
-        <span class="pin-cat ${cls}">${emoji} ${escHtml(p.cat)}</span>
+        <span class="pin-cat ${cls}">${escHtml(p.cat)}</span>
       </div>
       <div class="map-pin"><svg viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg"><path d="M14 0C6.82 0 1 5.82 1 13c0 9.8 13 23 13 23s13-13.2 13-23C27 5.82 21.18 0 14 0z" fill="${c}"/><circle cx="14" cy="13" r="5.5" fill="#fff" opacity=".95"/></svg></div>
     </div>`,
@@ -485,7 +548,7 @@ function popupHtml(p){
     <div class="popup-head">
       <div>
         <span class="popup-cat badge ${cls}">${p.cat}</span>
-        <div class="popup-title">${p.name}${p.top10?" ⭐":""}</div>
+        <div class="popup-title">${p.name}${p.top10?" ·":""}</div>
         <div class="popup-area">${p.area}</div>
       </div>
       ${mapIcons(p)}
@@ -543,19 +606,21 @@ function render(){
     const card = document.createElement("article");
     card.className = `card ${classMap[p.cat]}${p.top10?" highlight":""}`;
     card.innerHTML = `
-      <div class="row">
-        <div>
-          <div class="name">${p.name}${p.top10?'<span class="top-star">⭐</span>':""}</div>
-          <div class="area">📍 ${p.area}</div>
+      <div class="card-top">
+        <div class="card-meta">
+          <span class="cat-label">${p.cat}</span>
+          <span class="area-tag">${p.area}</span>
         </div>
         ${mapIcons(p)}
       </div>
+      <div class="name">${p.name}${p.top10?'<span class="top-star">·</span>':""}</div>
       ${ratingsHtml(p)}
       <div class="theme">${p.theme}</div>
       ${p.keywords?`<div class="keywords">${p.keywords}</div>`:""}
-      <span class="badge ${classMap[p.cat]}">${p.cat}</span>
-      ${p.top10?'<span class="badge top">TOP10</span>':""}
-      ${p.pick?'<span class="badge top">추천</span>':""}`;
+      <div class="card-tags">
+        ${p.top10?'<span class="tag top">TOP 10</span>':""}
+        ${p.pick?'<span class="tag pick">추천</span>':""}
+      </div>`;
     card.addEventListener("click", e => {
       if(e.target.closest("a")) return;
       map.setView([p.lat,p.lng],16);
@@ -565,19 +630,20 @@ function render(){
     list.appendChild(card);
   });
 
-  document.getElementById("count").textContent = `${filtered.length}개 장소 · Carto 지도`;
+  document.getElementById("count").textContent = `${filtered.length}곳`;
   if(bounds.length) map.fitBounds(bounds,{padding:[28,28],maxZoom:14});
   setTimeout(() => map.invalidateSize(), 200);
 }
 
 function renderRoutes(){
   const el = document.getElementById("routes");
-  el.innerHTML = routes.map(r => `
+  el.innerHTML = routes.map((r,i) => `
     <div class="route-card">
+      <div class="route-num">Route ${String(i+1).padStart(2,"0")}</div>
       <div class="route-title">${r.title}</div>
       <div class="route-desc">${r.desc}</div>
       <div class="route-steps">
-        ${r.steps.map((s,i) => `${i?'<span class="route-arrow">→</span>':""}<button class="route-step" data-name="${s}">${s}</button>`).join("")}
+        ${r.steps.map((s,j) => `${j?'<span class="route-arrow">→</span>':""}<button class="route-step" data-name="${s}">${s}</button>`).join("")}
       </div>
     </div>`).join("");
   el.querySelectorAll(".route-step").forEach(btn => {
