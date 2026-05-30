@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f5f3ef">
+<title>용산 감도 공간 지도</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{box-sizing:border-box}
+:root{
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#f5f3ef;
+  --card:#fff;
+  --text:#222;
+  --muted:#666;
+}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  padding-bottom:var(--safe-bottom);
+}
+.header{
+  position:sticky;top:0;z-index:5000;
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid #e8e2d8;
+  padding:calc(10px + var(--safe-top)) 12px 10px;
+}
+h1{font-size:20px;margin:0 0 4px;letter-spacing:-.4px}
+.sub{font-size:12px;color:var(--muted);line-height:1.35}
+.search-wrap{padding-top:10px}
+.search{
+  width:100%;
+  border:1px solid #e0d8cc;
+  border-radius:12px;
+  padding:10px 12px;
+  font-size:15px;
+  background:#fff;
+  outline:none;
+}
+.search:focus{border-color:#999;box-shadow:0 0 0 3px rgba(0,0,0,.06)}
+.filters{
+  display:flex;gap:7px;overflow-x:auto;
+  padding-top:10px;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.filters::-webkit-scrollbar{display:none}
+.filter{
+  flex:0 0 auto;
+  border:0;border-radius:999px;
+  padding:8px 11px;
+  font-size:13px;font-weight:700;
+  background:#eee;color:#333;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.filter.active{outline:2px solid #222;outline-offset:1px}
+.filter[data-cat="전체"]{background:#f3f4f6;color:#374151}
+.filter[data-cat="TOP10"]{background:#fef3c7;color:#b45309}
+.filter[data-cat="카페"]{background:#dbeafe;color:#1d4ed8}
+.filter[data-cat="음식"]{background:#fee2e2;color:#b91c1c}
+.filter[data-cat="문화"]{background:#ede9fe;color:#6d28d9}
+.filter[data-cat="산책"]{background:#dcfce7;color:#15803d}
+.filter[data-cat="디저트"]{background:#ffedd5;color:#c2410c}
+.tabs{
+  display:flex;gap:6px;padding-top:10px;
+}
+.tab{
+  flex:1;border:0;border-radius:10px;padding:9px;
+  font-size:13px;font-weight:700;background:#eee;color:#555;
+  cursor:pointer;
+}
+.tab.active{background:#222;color:#fff}
+#map{
+  height:42vh;min-height:220px;
+  width:100%;
+  z-index:1;
+  border-bottom:1px solid #ddd;
+}
+.panel{display:none}
+.panel.active{display:block}
+.count{
+  padding:9px 14px 0;
+  font-size:13px;
+  color:var(--muted);
+}
+.list{padding:10px 12px 20px}
+.routes{padding:0 12px 24px}
+.route-card{
+  background:#fff;border-radius:16px;padding:14px 12px;
+  margin-bottom:10px;border:1px solid #eee;
+  box-shadow:0 2px 9px rgba(0,0,0,.04);
+}
+.route-title{font-size:15px;font-weight:800;margin-bottom:4px}
+.route-desc{font-size:12px;color:var(--muted);line-height:1.4;margin-bottom:10px}
+.route-steps{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.route-step{
+  border:0;border-radius:999px;padding:7px 10px;
+  font-size:12px;font-weight:700;background:#f3f4f6;color:#333;
+  cursor:pointer;
+}
+.route-arrow{color:#aaa;font-size:12px}
+.card{
+  background:var(--card);
+  border-radius:16px;
+  padding:13px 12px;
+  margin-bottom:10px;
+  box-shadow:0 2px 9px rgba(0,0,0,.055);
+  border:1px solid #eee;
+  border-left-width:5px;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.card.highlight{border-color:#fcd34d;background:#fffbeb}
+.card.cafe{border-left-color:#60a5fa}
+.card.food{border-left-color:#f87171}
+.card.culture{border-left-color:#a78bfa}
+.card.walk{border-left-color:#4ade80}
+.card.dessert{border-left-color:#fb923c}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.name{font-size:17px;font-weight:800;letter-spacing:-.3px}
+.top-star{color:#f59e0b;font-size:14px;margin-left:4px}
+.area{font-size:12px;color:#777;margin-top:3px}
+.theme{font-size:13px;color:#444;line-height:1.45;margin-top:8px}
+.keywords{font-size:11px;color:#888;margin-top:6px;line-height:1.4}
+.links{display:flex;gap:5px;flex:0 0 auto}
+.links a{
+  text-decoration:none;
+  font-size:11px;font-weight:800;
+  border-radius:999px;
+  padding:6px 8px;
+  white-space:nowrap;
+}
+.g{background:#222;color:white}
+.n{background:#03c75a;color:white}
+.badge{
+  display:inline-block;
+  font-size:11px;font-weight:800;
+  border-radius:999px;
+  padding:4px 7px;
+  margin-top:8px;
+  margin-right:4px;
+}
+.badge.cafe{background:#dbeafe;color:#1d4ed8}
+.badge.food{background:#fee2e2;color:#b91c1c}
+.badge.culture{background:#ede9fe;color:#6d28d9}
+.badge.walk{background:#dcfce7;color:#15803d}
+.badge.dessert{background:#ffedd5;color:#c2410c}
+.badge.top{background:#fef3c7;color:#b45309}
+.note{
+  font-size:12px;color:#6a5736;
+  background:#fff7dd;
+  margin:10px 12px 0;
+  padding:10px 12px;
+  border-radius:13px;
+  line-height:1.45;
+}
+.leaflet-popup-content{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR",sans-serif;font-size:13px;margin:10px 12px}
+.popup-title{font-weight:800;font-size:15px;margin-bottom:3px}
+.popup-links a{display:inline-block;margin-right:6px;margin-top:7px;text-decoration:none;font-weight:800;color:#2563eb}
+.footer{
+  text-align:center;font-size:11px;color:#999;
+  padding:0 12px calc(16px + var(--safe-bottom));
+}
+</style>
+</head>
+<body>
+<header class="header">
+  <h1>용산 감도 공간 지도</h1>
+  <div class="sub">필터·검색으로 지도와 리스트를 함께 탐색 · 카드 탭하면 지도로 이동</div>
+  <div class="search-wrap">
+    <input class="search" id="search" type="search" placeholder="이름·지역·키워드 검색" autocomplete="off">
+  </div>
+  <div class="filters" id="filters">
+    <button class="filter active" data-cat="전체">전체</button>
+    <button class="filter" data-cat="TOP10">⭐ TOP10</button>
+    <button class="filter" data-cat="카페">☕ 카페</button>
+    <button class="filter" data-cat="음식">🍽 음식</button>
+    <button class="filter" data-cat="문화">📚 문화</button>
+    <button class="filter" data-cat="산책">🌿 산책</button>
+    <button class="filter" data-cat="디저트">🍧 디저트</button>
+  </div>
+  <div class="tabs">
+    <button class="tab active" data-panel="places">📍 장소</button>
+    <button class="tab" data-panel="routes">🗺 추천 루트</button>
+  </div>
+</header>
+
+<div id="panel-places" class="panel active">
+  <div id="map"></div>
+  <div class="note">좌표는 빠른 탐색용 기준점이에요. 영업시간·주소는 G(구글) / N(네이버) 링크로 최종 확인하세요.</div>
+  <div class="count" id="count"></div>
+  <main class="list" id="list"></main>
+</div>
+
+<div id="panel-routes" class="panel">
+  <div class="routes" id="routes"></div>
+</div>
+
+<div class="footer">용산 · 서울숲 · 한남 · 효창공원 감도 데이트 리스트</div>
+
+<script>
+const places = [
+  {name:"업스탠딩",cat:"카페",area:"해방촌",theme:"빈티지 건축 감성 / 나선형 계단",keywords:"건축적 공간감, 숨겨진 해방촌",lat:37.5459,lng:126.9858,top10:true},
+  {name:"콤포트",cat:"카페",area:"후암동",theme:"남산뷰 / 미니멀 건축 / 채광",keywords:"채광, 여유, 건축적 형태",lat:37.549,lng:126.981},
+  {name:"콤포타블 커피 남산점",cat:"카페",area:"후암동",theme:"남산뷰 / 우드톤 / 큰 창",keywords:"노을 시간, 조용한 데이트",lat:37.5495,lng:126.9805},
+  {name:"포디 서울",cat:"카페",area:"용산",theme:"기찻길 감성 / 숲속 오두막 느낌",keywords:"나무 질감, 기차뷰, 아늑함",lat:37.5305,lng:126.9625,top10:true},
+  {name:"버번스캐빈",cat:"카페",area:"용산",theme:"산장 카페바 / 우드 / 소파",keywords:"늦게까지 머물기 좋은 공간",lat:37.5365,lng:126.972},
+  {name:"3F LOBBY",cat:"카페",area:"용산",theme:"건축가 감성 / 미드센추리 / 티라미수",keywords:"에스프레소, 조용한 집중",lat:37.5335,lng:126.9695,top10:true,pick:true},
+  {name:"자키러브",cat:"카페",area:"후암동",theme:"LP + 커피 / 식물 / 콘크리트",keywords:"사색, 음악, 비 오는 날",lat:37.5485,lng:126.98,pick:true},
+  {name:"빌라커피바",cat:"카페",area:"해방촌",theme:"노을·야경 / 창뷰 / 대화",keywords:"저녁 데이트, 대화하기 좋은 곳",lat:37.5455,lng:126.9865},
+  {name:"토크메모리",cat:"카페",area:"효창공원",theme:"LP 음악 로스터리 / 일본풍 미니멀",keywords:"잔잔함, 커피 집중",lat:37.541,lng:126.9615,top10:true,pick:true},
+  {name:"빈스미스 커피 로스터스",cat:"카페",area:"효창공원",theme:"클래식 로스터리 / 우드톤",keywords:"커피 맛 중심, 깊은 톤",lat:37.5405,lng:126.9605},
+  {name:"유틸리티 커피 로스터스",cat:"카페",area:"원효로",theme:"드립 전문 / 콘크리트 + 스테인리스",keywords:"건축적 미감, 커피 퀄리티",lat:37.5385,lng:126.9585,top10:true,pick:true},
+  {name:"크놀프",cat:"카페",area:"효창공원",theme:"레트로 다방 / 푸딩 / 멜론소다",keywords:"빈티지, 느린 시간감",lat:37.54,lng:126.9595,pick:true},
+  {name:"엔지니어링클럽",cat:"카페",area:"용리단길",theme:"화이트 미니멀 / 디자인 감도",keywords:"조용한 작업, 디자인 감성",lat:37.533,lng:126.9725},
+  {name:"폰트 용산점",cat:"카페",area:"신용산",theme:"블루리본 커피 / 따뜻한 미니멀",keywords:"chill vibe, 따뜻한 공간감",lat:37.5295,lng:126.9675,top10:true,pick:true},
+  {name:"더 체임버 커피",cat:"카페",area:"신용산",theme:"모던 로스터리 / 블랙 외관",keywords:"도시적, 깔끔한 공간감",lat:37.529,lng:126.968},
+  {name:"피어커피 바",cat:"카페",area:"한남동",theme:"스페셜티 커피 바 / 플랫화이트",keywords:"작고 아늑한 바 형태",lat:37.5345,lng:127.0005},
+  {name:"언더트",cat:"카페",area:"용산",theme:"교토 느낌 / 한옥 / 자연광",keywords:"사진 맛집, 자연광",lat:37.5355,lng:126.9895,pick:true},
+  {name:"어프로치커피",cat:"카페",area:"신용산",theme:"브런치 + 스페셜티 커피",keywords:"브런치 데이트, 정돈된 미감",lat:37.5288,lng:126.9672},
+  {name:"HHSS HOUSE",cat:"카페",area:"망원동",theme:"비 오는 날 감성 / 하우스형 카페",keywords:"따뜻한 무드",lat:37.5565,lng:126.9055},
+  {name:"괄호",cat:"카페",area:"대흥역",theme:"큰 창 / 정원뷰 / 비 오는 날",keywords:"조용한 대화, 사색",lat:37.5477,lng:126.9427},
+  {name:"우이고",cat:"카페",area:"망원동",theme:"우드톤 / 편안하고 차분함",keywords:"편안한 감성",lat:37.5556,lng:126.9057},
+  {name:"포스트톤즈",cat:"카페",area:"삼청동",theme:"클래식 감성 / 전시·북카페 느낌",keywords:"클래식, 북카페",lat:37.584,lng:126.982},
+  {name:"타케모토",cat:"음식",area:"용산",theme:"일본식 덮밥 / 심플한 우드톤",keywords:"담백한 일본 가정식",lat:37.552,lng:126.975},
+  {name:"자니덤플링 본관",cat:"음식",area:"이태원/보광동",theme:"군만두 맛집 / 로컬 감성",keywords:"바삭한 만두, 웨이팅 맛집",lat:37.534,lng:126.994},
+  {name:"다로베",cat:"음식",area:"서울숲",theme:"나폴리 화덕피자 / 따뜻한 이탈리안",keywords:"데이트용 이탈리안",lat:37.5475,lng:127.0425,pick:true},
+  {name:"우동 키노야",cat:"음식",area:"용산",theme:"수타 우동 / 일본 현지 느낌",keywords:"가볍게 한 끼",lat:37.5335,lng:126.969},
+  {name:"미미옥 신용산점",cat:"음식",area:"신용산",theme:"쌀국수·한식 퓨전 / 아늑함",keywords:"감성적인 저녁 식사",lat:37.529,lng:126.967},
+  {name:"한땀스시",cat:"음식",area:"용산",theme:"가성비 스시 코스 / 차분한 우드톤",keywords:"제철 생선, 2만원대",lat:37.5345,lng:126.971},
+  {name:"오일제",cat:"음식",area:"삼각지",theme:"들깨미역국 한식 / 정갈한 한상",keywords:"예약 어려움, 깊은 국물맛",lat:37.534,lng:126.973,top10:true,pick:true},
+  {name:"테디뵈르하우스",cat:"음식",area:"용리단길",theme:"크로와상 베이커리 / 브런치",keywords:"웨이팅 맛집, 브런치 데이트",lat:37.533,lng:126.972,pick:true},
+  {name:"그래픽",cat:"문화",area:"경리단길",theme:"아트북 전문 서점 / 디자인 감도",keywords:"희귀 아트북, 갤러리형 서점",lat:37.538,lng:126.991,top10:true},
+  {name:"PDF 서울",cat:"문화",area:"한남동",theme:"Photo + Design + Fashion / 아카이브",keywords:"디자인 서적, 취향 탐색",lat:37.535,lng:127.0,top10:true,pick:true},
+  {name:"후지필름 하우스 오브 포토그래피 서울",cat:"문화",area:"이태원",theme:"사진 복합문화공간",keywords:"사진 전시, 체험",lat:37.534,lng:126.9945},
+  {name:"푸투라서울",cat:"문화",area:"북촌",theme:"건축·예술 복합공간 / 자연광",keywords:"건축미, 실험적 전시",lat:37.582,lng:126.9845,top10:true,pick:true},
+  {name:"서울시립 사진미술관",cat:"문화",area:"도봉구",theme:"사진 전문 미술관 / 화이트 큐브",keywords:"사진예술, 조용한 관람",lat:37.665,lng:127.046},
+  {name:"서울문화예술교육센터 용산",cat:"문화",area:"용산",theme:"LP·독서·워크숍 / 공공문화 라운지",keywords:"북토크, 공연, 무료 힐링",lat:37.5315,lng:126.9655,pick:true},
+  {name:"믹상",cat:"문화",area:"용산",theme:"LP샵 / 음악 아카이브",keywords:"음악 취향 공유",lat:37.5335,lng:126.9945},
+  {name:"나의 아저씨 촬영지",cat:"산책",area:"용산 기찻길",theme:"철길 감성 산책 / 사진 스팟",keywords:"커플 사진, 감성 산책",lat:37.5295,lng:126.9665,pick:true},
+  {name:"윤슬",cat:"산책",area:"서울역",theme:"공공예술 파빌리온 / 도시 미감",keywords:"물결 반사, 사진 스팟",lat:37.555,lng:126.97},
+  {name:"율디세",cat:"산책",area:"용산",theme:"돌담 + 자연광 / 동굴 느낌 공간",keywords:"비밀 아지트, 비 오는 날",lat:37.536,lng:126.989},
+  {name:"젤라또 피케",cat:"디저트",area:"한남동",theme:"젤라또 + 크레페 + 라이프스타일",keywords:"데이트 디저트, 프렌치 빈티지",lat:37.5348,lng:127.0012}
+];
+
+const routes = [
+  {title:"자연스러움 속의 질서",desc:"공간 미감 + 대화 + 사진까지 결이 이어지는 조합",steps:["자키러브","3F LOBBY","언더트","다로베"]},
+  {title:"건축 + 커피 + 문화",desc:"콘크리트/우드/LP/책 — 부드러움 속의 단단함",steps:["유틸리티 커피 로스터스","토크메모리","서울문화예술교육센터 용산"]},
+  {title:"밝고 귀여운 데이트",desc:"사진도 잘 나오고 분위기 흐름이 좋은 루트",steps:["테디뵈르하우스","크놀프","나의 아저씨 촬영지"]},
+  {title:"취향 아카이브 탐색",desc:"사진·디자인·패션 감도를 한 번에",steps:["PDF 서울","후지필름 하우스 오브 포토그래피 서울","그래픽"]},
+  {title:"TOP10 하이라이트",desc:"정원재님 취향 기준 베스트 10",steps:["그래픽","PDF 서울","업스탠딩","유틸리티 커피 로스터스","3F LOBBY","포디 서울","푸투라서울","토크메모리","폰트 용산점","오일제"]}
+];
+
+places.forEach(p => {
+  const q = encodeURIComponent(p.name + " 서울");
+  p.google = p.google || `https://www.google.com/maps/search/${q}`;
+  p.naver = p.naver || `https://map.naver.com/p/search/${q}`;
+});
+
+const colors = {카페:"#2563eb",음식:"#dc2626",문화:"#7c3aed",산책:"#16a34a",디저트:"#ea580c"};
+const classMap = {카페:"cafe",음식:"food",문화:"culture",산책:"walk",디저트:"dessert"};
+
+let activeCat = "전체";
+let searchQuery = "";
+const markerMap = new Map();
+
+const map = L.map("map",{zoomControl:true}).setView([37.54,126.98],13);
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  maxZoom:19, attribution:"&copy; OpenStreetMap"
+}).addTo(map);
+
+function makeIcon(cat){
+  return L.divIcon({
+    className:"",
+    html:`<div style="width:18px;height:18px;border-radius:50%;background:${colors[cat]};border:3px solid white;box-shadow:0 1px 6px rgba(0,0,0,.35)"></div>`,
+    iconSize:[18,18], iconAnchor:[9,9]
+  });
+}
+
+function matchPlace(p){
+  if(activeCat === "TOP10" && !p.top10) return false;
+  if(activeCat !== "전체" && activeCat !== "TOP10" && p.cat !== activeCat) return false;
+  if(!searchQuery) return true;
+  const hay = [p.name,p.area,p.theme,p.keywords||"",p.cat].join(" ").toLowerCase();
+  return hay.includes(searchQuery);
+}
+
+function focusPlace(name){
+  const p = places.find(x => x.name === name);
+  if(!p) return;
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(pn => pn.classList.remove("active"));
+  document.querySelector('.tab[data-panel="places"]').classList.add("active");
+  document.getElementById("panel-places").classList.add("active");
+  activeCat = "전체";
+  searchQuery = "";
+  document.getElementById("search").value = "";
+  document.querySelectorAll(".filter").forEach(b => b.classList.toggle("active", b.dataset.cat === "전체"));
+  render();
+  const m = markerMap.get(p.name);
+  if(m){
+    map.setView([p.lat,p.lng],16);
+    m.openPopup();
+    setTimeout(() => map.invalidateSize(), 200);
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+}
+
+function render(){
+  markerMap.clear();
+  map.eachLayer(layer => { if(layer instanceof L.Marker) map.removeLayer(layer); });
+
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  const filtered = places.filter(matchPlace);
+  const bounds = [];
+
+  filtered.forEach(p => {
+    const marker = L.marker([p.lat,p.lng],{icon:makeIcon(p.cat)})
+      .bindPopup(`
+        <div class="popup-title">${p.name}${p.top10?" ⭐":""}</div>
+        <div>${p.area}</div>
+        <div style="margin-top:4px;color:#555">${p.theme}</div>
+        <div class="popup-links">
+          <a href="${p.google}" target="_blank" rel="noopener">Google</a>
+          <a href="${p.naver}" target="_blank" rel="noopener">Naver</a>
+        </div>`)
+      .addTo(map);
+    markerMap.set(p.name, marker);
+    bounds.push([p.lat,p.lng]);
+
+    const card = document.createElement("article");
+    card.className = `card ${classMap[p.cat]}${p.top10?" highlight":""}`;
+    card.innerHTML = `
+      <div class="row">
+        <div>
+          <div class="name">${p.name}${p.top10?'<span class="top-star">⭐</span>':""}</div>
+          <div class="area">📍 ${p.area}</div>
+        </div>
+        <div class="links">
+          <a class="g" href="${p.google}" target="_blank" rel="noopener">G</a>
+          <a class="n" href="${p.naver}" target="_blank" rel="noopener">N</a>
+        </div>
+      </div>
+      <div class="theme">${p.theme}</div>
+      ${p.keywords?`<div class="keywords">${p.keywords}</div>`:""}
+      <span class="badge ${classMap[p.cat]}">${p.cat}</span>
+      ${p.top10?'<span class="badge top">TOP10</span>':""}
+      ${p.pick?'<span class="badge top">추천</span>':""}`;
+    card.addEventListener("click", e => {
+      if(e.target.tagName.toLowerCase() === "a") return;
+      map.setView([p.lat,p.lng],16);
+      marker.openPopup();
+      window.scrollTo({top:0, behavior:"smooth"});
+    });
+    list.appendChild(card);
+  });
+
+  document.getElementById("count").textContent = `${filtered.length}개 장소 표시 중`;
+  if(bounds.length) map.fitBounds(bounds,{padding:[28,28],maxZoom:14});
+  setTimeout(() => map.invalidateSize(), 200);
+}
+
+function renderRoutes(){
+  const el = document.getElementById("routes");
+  el.innerHTML = routes.map(r => `
+    <div class="route-card">
+      <div class="route-title">${r.title}</div>
+      <div class="route-desc">${r.desc}</div>
+      <div class="route-steps">
+        ${r.steps.map((s,i) => `${i?'<span class="route-arrow">→</span>':""}<button class="route-step" data-name="${s}">${s}</button>`).join("")}
+      </div>
+    </div>`).join("");
+  el.querySelectorAll(".route-step").forEach(btn => {
+    btn.addEventListener("click", () => focusPlace(btn.dataset.name));
+  });
+}
+
+document.querySelectorAll(".filter").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filter").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    activeCat = btn.dataset.cat;
+    render();
+  });
+});
+
+document.getElementById("search").addEventListener("input", e => {
+  searchQuery = e.target.value.trim().toLowerCase();
+  render();
+});
+
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("panel-" + tab.dataset.panel).classList.add("active");
+    if(tab.dataset.panel === "places") setTimeout(() => map.invalidateSize(), 200);
+  });
+});
+
+render();
+renderRoutes();
+</script>
+</body>
+</html>
