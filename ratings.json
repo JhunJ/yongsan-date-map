@@ -1,0 +1,517 @@
+{
+  "업스탠딩": {
+    "google": {
+      "score": 4.7,
+      "count": null
+    },
+    "naver": {
+      "count": 339
+    },
+    "kakao": null,
+    "naverId": "1681935587"
+  },
+  "콤포트": {
+    "google": {
+      "score": 4.5,
+      "count": 150
+    },
+    "naver": {
+      "count": 230
+    },
+    "kakao": {
+      "score": 3.5,
+      "count": 47
+    },
+    "naverId": "1540168051"
+  },
+  "콤포타블 커피 남산점": {
+    "google": {
+      "score": 4.5,
+      "count": 114
+    },
+    "naver": {
+      "count": 602
+    },
+    "kakao": null,
+    "naverId": "1487216698"
+  },
+  "포디 서울": {
+    "google": {
+      "score": 4.5,
+      "count": 14
+    },
+    "naver": {
+      "count": 91
+    },
+    "kakao": {
+      "score": 3.9,
+      "count": 17
+    },
+    "naverId": "2040490893"
+  },
+  "버번스캐빈": {
+    "google": {
+      "score": 4.2,
+      "count": 5
+    },
+    "naver": {
+      "count": 567
+    },
+    "kakao": {
+      "score": 3.7,
+      "count": 14
+    },
+    "naverId": "1003135806"
+  },
+  "3F LOBBY": {
+    "google": {
+      "score": 4.4,
+      "count": 117
+    },
+    "naver": {
+      "count": 86
+    },
+    "kakao": {
+      "score": 4.0,
+      "count": 101
+    },
+    "naverId": "1454089015"
+  },
+  "자키러브": {
+    "google": {
+      "score": 4.8,
+      "count": 9
+    },
+    "naver": {
+      "count": 72
+    },
+    "kakao": null,
+    "naverId": "2086851766"
+  },
+  "빌라커피바": {
+    "google": {
+      "score": 4.6,
+      "count": 34
+    },
+    "naver": {
+      "count": 301
+    },
+    "kakao": {
+      "score": 3.8,
+      "count": 60
+    },
+    "naverId": "1035190165"
+  },
+  "토크메모리": {
+    "google": {
+      "score": 5.0,
+      "count": 2
+    },
+    "naver": {
+      "count": 25
+    },
+    "kakao": {
+      "score": 4.8,
+      "count": 22
+    },
+    "naverId": "1264531024"
+  },
+  "빈스미스 커피 로스터스": {
+    "google": {
+      "score": 4.4,
+      "count": 65
+    },
+    "naver": {
+      "count": 257
+    },
+    "kakao": {
+      "score": 4.5,
+      "count": 27
+    },
+    "naverId": "1194955529"
+  },
+  "유틸리티 커피 로스터스": {
+    "google": {
+      "score": 5.0,
+      "count": 27
+    },
+    "naver": {
+      "count": 48
+    },
+    "kakao": {
+      "score": 4.5,
+      "count": 13
+    },
+    "naverId": "1040889404"
+  },
+  "크놀프": {
+    "google": {
+      "score": 5.0,
+      "count": 1
+    },
+    "naver": null,
+    "kakao": null
+  },
+  "엔지니어링클럽": {
+    "google": {
+      "score": 4.6,
+      "count": 20
+    },
+    "naver": {
+      "count": 202
+    },
+    "kakao": {
+      "score": 4.2,
+      "count": 53
+    },
+    "naverId": "1888034107"
+  },
+  "폰트 용산점": {
+    "google": {
+      "score": 4.4,
+      "count": 160
+    },
+    "naver": {
+      "count": 2238
+    },
+    "kakao": null,
+    "naverId": "1992797586"
+  },
+  "더 체임버 커피": {
+    "google": {
+      "score": 4.2,
+      "count": 109
+    },
+    "naver": {
+      "count": 440
+    },
+    "kakao": {
+      "score": 5.0,
+      "count": 1
+    },
+    "naverId": "1337029487"
+  },
+  "피어커피 바": {
+    "google": {
+      "score": 4.8,
+      "count": 16
+    },
+    "naver": {
+      "count": 109
+    },
+    "kakao": {
+      "score": 4.5,
+      "count": 22
+    },
+    "naverId": "1238423329"
+  },
+  "언더트": {
+    "google": {
+      "score": 4.7,
+      "count": 42
+    },
+    "naver": null,
+    "kakao": null
+  },
+  "어프로치커피": {
+    "google": {
+      "score": 4.9,
+      "count": 89
+    },
+    "naver": null,
+    "kakao": null
+  },
+  "HHSS HOUSE": {
+    "google": {
+      "score": 4.2,
+      "count": 5
+    },
+    "naver": {
+      "count": 84
+    },
+    "kakao": {
+      "score": 2.8,
+      "count": 49
+    },
+    "naverId": "1237365247"
+  },
+  "괄호": {
+    "google": {
+      "score": 5.0,
+      "count": 1
+    },
+    "naver": {
+      "count": 35
+    },
+    "kakao": null,
+    "naverId": "2059686876"
+  },
+  "우이고": {
+    "google": {
+      "score": 4.3,
+      "count": 305
+    },
+    "naver": {},
+    "kakao": {
+      "score": 5.0,
+      "count": 2
+    },
+    "naverId": "17250315"
+  },
+  "포스트톤즈": {
+    "google": {
+      "score": 5.0,
+      "count": 1
+    },
+    "naver": {
+      "count": 2200
+    },
+    "kakao": {
+      "score": 4.0,
+      "count": 115
+    },
+    "naverId": "1437513434"
+  },
+  "타케모토": {
+    "google": {
+      "score": 4.4,
+      "count": 110
+    },
+    "naver": {
+      "count": 484
+    },
+    "kakao": null,
+    "naverId": "1030168902"
+  },
+  "자니덤플링 본관": {
+    "google": {
+      "score": 4.3,
+      "count": 1410
+    },
+    "naver": {
+      "count": 1795
+    },
+    "kakao": {
+      "score": 4.1,
+      "count": 215
+    },
+    "naverId": "1236287159"
+  },
+  "다로베": {
+    "google": {
+      "score": 4.2,
+      "count": 799
+    },
+    "naver": {
+      "count": 458
+    },
+    "kakao": null,
+    "naverId": "1569901520"
+  },
+  "우동 키노야": {
+    "google": {
+      "score": 4.4,
+      "count": 21
+    },
+    "naver": {
+      "count": 3416
+    },
+    "kakao": {
+      "score": 4.0,
+      "count": 151
+    },
+    "naverId": "1774772870"
+  },
+  "미미옥 신용산점": {
+    "google": {
+      "score": 4.3,
+      "count": 593
+    },
+    "naver": {
+      "count": 2899
+    },
+    "kakao": null,
+    "naverId": "1565282758"
+  },
+  "한땀스시": {
+    "google": {
+      "score": 4.6,
+      "count": 16
+    },
+    "naver": {
+      "count": 1373
+    },
+    "kakao": {
+      "score": 4.5,
+      "count": 115
+    },
+    "naverId": "1554437799"
+  },
+  "오일제": {
+    "google": {
+      "score": 4.7,
+      "count": 42
+    },
+    "naver": {
+      "count": 174
+    },
+    "kakao": {
+      "score": 4.0,
+      "count": 31
+    },
+    "naverId": "1749453026"
+  },
+  "테디뵈르하우스": {
+    "google": {
+      "score": 4.8,
+      "count": 1709
+    },
+    "naver": {
+      "count": 11663
+    },
+    "kakao": null,
+    "naverId": "1125171430"
+  },
+  "그래픽": {
+    "google": {
+      "score": 4.6,
+      "count": 125
+    },
+    "naver": {
+      "count": 304
+    },
+    "kakao": {
+      "score": 4.4,
+      "count": 121
+    },
+    "naverId": "1867194239"
+  },
+  "PDF 서울": {
+    "google": {
+      "score": 5.0,
+      "count": 8
+    },
+    "naver": {
+      "count": 3
+    },
+    "kakao": {
+      "score": 4.3,
+      "count": 4
+    },
+    "naverId": "1556467563"
+  },
+  "후지필름 하우스 오브 포토그래피 서울": {
+    "google": {
+      "score": 5.0,
+      "count": 133
+    },
+    "naver": {
+      "count": 1
+    },
+    "kakao": {
+      "score": 4.9,
+      "count": 72
+    },
+    "naverId": "2140376481"
+  },
+  "푸투라서울": {
+    "google": {
+      "score": 4.6,
+      "count": 29
+    },
+    "naver": {
+      "count": 985
+    },
+    "kakao": {
+      "score": 4.7,
+      "count": 80
+    },
+    "naverId": "1682382331"
+  },
+  "서울시립 사진미술관": {
+    "google": {
+      "score": 4.5,
+      "count": 110
+    },
+    "naver": {
+      "count": 9
+    },
+    "kakao": {
+      "score": 3.4,
+      "count": 59
+    },
+    "naverId": "1530242788"
+  },
+  "서울문화예술교육센터 용산": {
+    "google": {
+      "score": 4.2,
+      "count": 18
+    },
+    "naver": {
+      "count": 554
+    },
+    "kakao": {
+      "score": 4.9,
+      "count": 54
+    },
+    "naverId": "1279999282"
+  },
+  "믹상": {
+    "google": {
+      "score": 5.0,
+      "count": 3
+    },
+    "naver": {
+      "count": 1
+    },
+    "kakao": null,
+    "naverId": "19542362"
+  },
+  "나의 아저씨 촬영지": {
+    "google": {
+      "score": 4.5,
+      "count": 115
+    },
+    "naver": {
+      "count": 2
+    },
+    "kakao": null,
+    "naverId": "1306605742"
+  },
+  "윤슬": {
+    "google": {
+      "score": 4.3,
+      "count": 27
+    },
+    "naver": {
+      "count": 574
+    },
+    "kakao": {
+      "score": 4.8,
+      "count": 10
+    },
+    "naverId": "1002079243"
+  },
+  "율디세": {
+    "google": {
+      "score": 5.0,
+      "count": 3
+    },
+    "naver": null,
+    "kakao": null
+  },
+  "젤라또 피케": {
+    "google": {
+      "score": 5.0,
+      "count": 213
+    },
+    "naver": {
+      "count": 170
+    },
+    "kakao": {
+      "score": 4.9,
+      "count": 58
+    },
+    "naverId": "1784577363"
+  }
+}

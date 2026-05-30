@@ -142,13 +142,29 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:-.4px}
 }
 .popup-area{font-size:12px;color:#6b7280;margin-top:2px}
 .popup-theme{font-size:13px;color:#374151;line-height:1.45;margin-top:8px}
-.popup-links{display:flex;gap:6px;margin-top:12px}
-.popup-links a{
-  flex:1;text-align:center;text-decoration:none;
-  font-size:12px;font-weight:700;border-radius:10px;padding:8px 10px;
+.popup-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.map-icons{display:flex;gap:4px;flex:0 0 auto}
+.mi{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:8px;
+  text-decoration:none;font-size:11px;font-weight:800;color:#fff;
 }
-.popup-g{background:#f3f4f6;color:#111}
-.popup-n{background:#03c75a;color:#fff}
+.mi.g{background:#1a1a1a}
+.mi.n{background:#03c75a}
+.mi.k{background:#fee500;color:#3c1e1e}
+.ratings{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.rt{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:11px;background:#f3f4f6;border-radius:8px;padding:4px 7px;color:#444;
+}
+.rt i{font-style:normal;font-weight:800;min-width:12px;text-align:center}
+.rt.g i{color:#1a1a1a}
+.rt.n i{color:#03c75a}
+.rt.k i{color:#b8860b}
+.rt b{font-weight:800;color:#111}
+.rt small{color:#888;font-weight:600;margin-left:1px}
+.card .map-icons{margin-top:2px}
+.card .ratings{margin-top:6px}
 .map-pin{
   width:28px;height:36px;
   filter:drop-shadow(0 2px 4px rgba(0,0,0,.28));
@@ -202,16 +218,17 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:-.4px}
 .area{font-size:12px;color:#777;margin-top:3px}
 .theme{font-size:13px;color:#444;line-height:1.45;margin-top:8px}
 .keywords{font-size:11px;color:#888;margin-top:6px;line-height:1.4}
-.links{display:flex;gap:5px;flex:0 0 auto}
-.links a{
+.links{display:flex;gap:4px;flex:0 0 auto}
+.links a,.links .mi{
   text-decoration:none;
   font-size:11px;font-weight:800;
-  border-radius:999px;
-  padding:6px 8px;
-  white-space:nowrap;
+  border-radius:8px;
+  width:26px;height:26px;
+  display:inline-flex;align-items:center;justify-content:center;
 }
-.g{background:#222;color:white}
-.n{background:#03c75a;color:white}
+.g,.mi.g{background:#222;color:white}
+.n,.mi.n{background:#03c75a;color:white}
+.k,.mi.k{background:#fee500;color:#3c1e1e}
 .badge{
   display:inline-block;
   font-size:11px;font-weight:800;
@@ -272,7 +289,7 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:-.4px}
       <button class="map-style" data-style="dark">다크</button>
     </div>
   </div>
-  <div class="note">Carto 지도(무료) · 좌표는 탐색용 기준점 · G/N 링크로 최종 확인</div>
+  <div class="note">Carto 지도 · G/N/K 아이콘으로 각 지도 앱 이동 · 평점은 2026.05 스냅샷 (네이버는 별점 미제공 시 리뷰 수만 표시)</div>
   <div class="count" id="count"></div>
   <main class="list" id="list"></main>
 </div>
@@ -340,7 +357,41 @@ places.forEach(p => {
   const q = encodeURIComponent(p.name + " 서울");
   p.google = p.google || `https://www.google.com/maps/search/${q}`;
   p.naver = p.naver || `https://map.naver.com/p/search/${q}`;
+  p.kakao = p.kakao || `https://map.kakao.com/link/search/${encodeURIComponent(p.name + " " + p.area)}`;
 });
+
+function applyRatings(data){
+  places.forEach(p => {
+    const r = data[p.name];
+    if(!r) return;
+    p.ratings = {google: r.google || null, naver: r.naver || null, kakao: r.kakao || null};
+    if(r.naverId) p.naver = `https://map.naver.com/p/entry/place/${r.naverId}`;
+  });
+}
+
+function mapIcons(p){
+  return `<div class="map-icons">
+    <a class="mi g" href="${p.google}" target="_blank" rel="noopener" title="Google Maps">G</a>
+    <a class="mi n" href="${p.naver}" target="_blank" rel="noopener" title="Naver Map">N</a>
+    <a class="mi k" href="${p.kakao}" target="_blank" rel="noopener" title="Kakao Map">K</a>
+  </div>`;
+}
+
+function ratingsHtml(p){
+  const r = p.ratings || {};
+  const parts = [];
+  const add = (key, label, cls) => {
+    const x = r[key];
+    if(!x || (!x.score && !x.count)) return;
+    const score = x.score ? `<b>${x.score}</b>` : "";
+    const count = x.count ? `<small>(${x.count.toLocaleString()})</small>` : "";
+    parts.push(`<span class="rt ${cls}"><i>${label}</i>${score}${count}</span>`);
+  };
+  add("google","G","g");
+  add("naver","N","n");
+  add("kakao","K","k");
+  return parts.length ? `<div class="ratings">${parts.join("")}</div>` : "";
+}
 
 const colors = {카페:"#2563eb",음식:"#dc2626",문화:"#7c3aed",산책:"#16a34a",디저트:"#ea580c"};
 const classMap = {카페:"cafe",음식:"food",문화:"culture",산책:"walk",디저트:"dessert"};
@@ -393,14 +444,16 @@ function makeIcon(cat){
 function popupHtml(p){
   const cls = classMap[p.cat];
   return `<div class="popup-inner">
-    <span class="popup-cat badge ${cls}">${p.cat}</span>
-    <div class="popup-title">${p.name}${p.top10?" ⭐":""}</div>
-    <div class="popup-area">${p.area}</div>
-    <div class="popup-theme">${p.theme}</div>
-    <div class="popup-links">
-      <a class="popup-g" href="${p.google}" target="_blank" rel="noopener">Google Maps</a>
-      <a class="popup-n" href="${p.naver}" target="_blank" rel="noopener">Naver Map</a>
+    <div class="popup-head">
+      <div>
+        <span class="popup-cat badge ${cls}">${p.cat}</span>
+        <div class="popup-title">${p.name}${p.top10?" ⭐":""}</div>
+        <div class="popup-area">${p.area}</div>
+      </div>
+      ${mapIcons(p)}
     </div>
+    <div class="popup-theme">${p.theme}</div>
+    ${ratingsHtml(p)}
   </div>`;
 }
 
@@ -457,18 +510,16 @@ function render(){
           <div class="name">${p.name}${p.top10?'<span class="top-star">⭐</span>':""}</div>
           <div class="area">📍 ${p.area}</div>
         </div>
-        <div class="links">
-          <a class="g" href="${p.google}" target="_blank" rel="noopener">G</a>
-          <a class="n" href="${p.naver}" target="_blank" rel="noopener">N</a>
-        </div>
+        ${mapIcons(p)}
       </div>
+      ${ratingsHtml(p)}
       <div class="theme">${p.theme}</div>
       ${p.keywords?`<div class="keywords">${p.keywords}</div>`:""}
       <span class="badge ${classMap[p.cat]}">${p.cat}</span>
       ${p.top10?'<span class="badge top">TOP10</span>':""}
       ${p.pick?'<span class="badge top">추천</span>':""}`;
     card.addEventListener("click", e => {
-      if(e.target.tagName.toLowerCase() === "a") return;
+      if(e.target.closest("a")) return;
       map.setView([p.lat,p.lng],16);
       marker.openPopup();
       window.scrollTo({top:document.querySelector(".map-shell").offsetTop - 8, behavior:"smooth"});
@@ -522,6 +573,11 @@ document.querySelectorAll(".tab").forEach(tab => {
 
 render();
 renderRoutes();
+
+fetch("ratings.json")
+  .then(r => r.json())
+  .then(data => { applyRatings(data); render(); })
+  .catch(() => {});
 </script>
 </body>
 </html>
