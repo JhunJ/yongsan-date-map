@@ -171,7 +171,35 @@ h1{font-size:20px;margin:0 0 4px;letter-spacing:-.4px}
   transition:transform .15s ease;
 }
 .map-pin svg{display:block;width:100%;height:100%}
-.leaflet-marker-icon.active-pin .map-pin{transform:scale(1.15) translateY(-2px)}
+.pin-wrap{
+  display:flex;flex-direction:column;align-items:center;
+  transform:translateY(0);
+}
+.pin-label{
+  text-align:center;margin-bottom:3px;
+  background:rgba(255,255,255,.96);
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:8px;padding:3px 6px 4px;
+  box-shadow:0 2px 8px rgba(0,0,0,.12);
+  max-width:88px;
+  line-height:1.2;
+}
+.pin-name{
+  font-size:10px;font-weight:800;color:#111;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  max-width:76px;letter-spacing:-.2px;
+}
+.pin-cat{
+  font-size:9px;font-weight:700;margin-top:2px;
+  border-radius:999px;padding:1px 5px;display:inline-block;
+}
+.pin-cat.cafe{background:#dbeafe;color:#1d4ed8}
+.pin-cat.food{background:#fee2e2;color:#b91c1c}
+.pin-cat.culture{background:#ede9fe;color:#6d28d9}
+.pin-cat.walk{background:#dcfce7;color:#15803d}
+.pin-cat.dessert{background:#ffedd5;color:#c2410c}
+.custom-pin{background:transparent!important;border:none!important}
+.leaflet-marker-icon.active-pin .map-pin{transform:scale(1.12) translateY(-2px)}
 .panel{display:none}
 .panel.active{display:block}
 .count{
@@ -432,12 +460,31 @@ document.getElementById("mapStyles").addEventListener("click", e => {
   map.attributionControl.setPrefix(false);
 });
 
-function makeIcon(cat){
-  const c = colors[cat];
+const catEmoji = {카페:"☕",음식:"🍽",문화:"📚",산책:"🌿",디저트:"🍧"};
+
+function escHtml(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+}
+
+function makeIcon(p){
+  const c = colors[p.cat];
+  const cls = classMap[p.cat];
+  const emoji = catEmoji[p.cat] || "";
+  const labelH = 34;
+  const pinH = 36;
+  const w = 88;
   return L.divIcon({
     className:"custom-pin",
-    html:`<div class="map-pin"><svg viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg"><path d="M14 0C6.82 0 1 5.82 1 13c0 9.8 13 23 13 23s13-13.2 13-23C27 5.82 21.18 0 14 0z" fill="${c}"/><circle cx="14" cy="13" r="5.5" fill="#fff" opacity=".95"/></svg></div>`,
-    iconSize:[28,36], iconAnchor:[14,36], popupAnchor:[0,-32]
+    html:`<div class="pin-wrap">
+      <div class="pin-label">
+        <div class="pin-name" title="${escHtml(p.name)}">${escHtml(p.name)}</div>
+        <span class="pin-cat ${cls}">${emoji} ${escHtml(p.cat)}</span>
+      </div>
+      <div class="map-pin"><svg viewBox="0 0 28 36" xmlns="http://www.w3.org/2000/svg"><path d="M14 0C6.82 0 1 5.82 1 13c0 9.8 13 23 13 23s13-13.2 13-23C27 5.82 21.18 0 14 0z" fill="${c}"/><circle cx="14" cy="13" r="5.5" fill="#fff" opacity=".95"/></svg></div>
+    </div>`,
+    iconSize:[w, labelH + pinH],
+    iconAnchor:[w / 2, labelH + pinH],
+    popupAnchor:[0, -(labelH + pinH - 4)]
   });
 }
 
@@ -496,7 +543,7 @@ function render(){
   const bounds = [];
 
   filtered.forEach(p => {
-    const marker = L.marker([p.lat,p.lng],{icon:makeIcon(p.cat)})
+    const marker = L.marker([p.lat,p.lng],{icon:makeIcon(p)})
       .bindPopup(popupHtml(p),{maxWidth:280,minWidth:220,className:"place-popup"})
       .addTo(map);
     markerMap.set(p.name, marker);
